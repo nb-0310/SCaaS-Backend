@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
 
 contract ERC20Contract is ERC20, ERC20Burnable, ERC20Pausable, Ownable, ERC20Permit {
     constructor(address initialOwner)
-        ERC20("ERC20Contract", "ETK")
+        ERC20("ERC20Contract", "MTK")
         Ownable(initialOwner)
         ERC20Permit("ERC20Contract")
     {

@@ -1,93 +1,78 @@
-const fs = require("fs")
-const solc = require("solc")
-const { erc20 } = require("@openzeppelin/wizard")
-// const { options } = require("./server.js")
+// generateERC20.js
+const fs = require("fs");
+const solc = require("solc");
+const { erc20 } = require("@openzeppelin/wizard");
 
 function generateTransferFunction() {
   return `
       function transfer(address to, uint256 amount) public override returns(bool) {
           _transfer(msg.sender, to, amount);
           return true;
-      }`
+      }`;
 }
 
-let contractSource
+async function generateContract(options) {
+  return new Promise((resolve, reject) => {
+    const contract = erc20.print(options);
 
-function generateContract(options) {
-  const contract = erc20.print(options)
+    const lastCurlyBraceIndex = contract.lastIndexOf("}");
+    const modifiedContract =
+      contract.slice(0, lastCurlyBraceIndex) +
+      generateTransferFunction() +
+      "\n" +
+      contract.slice(lastCurlyBraceIndex);
 
-  const lastCurlyBraceIndex = contract.lastIndexOf("}")
-  const modifiedContract =
-    contract.slice(0, lastCurlyBraceIndex) +
-    generateTransferFunction() +
-    "\n" +
-    contract.slice(lastCurlyBraceIndex)
+    const finalContract = modifiedContract.replace(
+      "/// @custom:oz-upgrades-unsafe-allow constructor",
+      ""
+    );
 
-  const finalContract = modifiedContract.replace(
-    "/// @custom:oz-upgrades-unsafe-allow constructor",
-    ""
-  )
+    const filePath = `contracts/${options.name}.sol`;
 
-  fs.writeFileSync(`contracts/${options.name}.sol`, finalContract)
-  contractSource = finalContract
-}
+    fs.writeFileSync(filePath, finalContract);
 
-const params = {
-  name: "ERC20Contract",
-  symbol: "ETK",
-  mintable: true,
-  burnable: true,
-  pausable: true,
-  premint: "1000000",
-  access: "ownable",
-}
-
-generateContract(params)
-
-setTimeout(() => {
-    // console.log(contractSource)
-  const input = {
-    language: "Solidity",
-    sources: {
-      "contracts/ERC20Contract.sol": {
-        content: contractSource,
-      },
-    },
-    settings: {
-      outputSelection: {
-        "*": {
-          "*": ["*"],
+    const input = {
+      language: "Solidity",
+      sources: {
+        [filePath]: {
+          content: finalContract,
         },
       },
-    },
-  }
+      settings: {
+        outputSelection: {
+          "*": {
+            "*": ["*"],
+          },
+        },
+      },
+    };
 
-  function findImports(path) {
-    const zeppelinPath = "node_modules/@openzeppelin/contracts"
-    if (path.startsWith("contracts/ERC20Contract.sol")) {
-      return { contents: contractSource }
-    } else if (path.startsWith("@openzeppelin/contracts")) {
-      const fullPath = path.replace("@openzeppelin/contracts", zeppelinPath)
-      return { contents: fs.readFileSync(fullPath, "utf-8") }
-    } else {
-      return { error: "File not found" }
+    function findImports(path) {
+      const zeppelinPath = "node_modules/@openzeppelin/contracts";
+      if (path.startsWith(filePath)) {
+        return { contents: finalContract };
+      } else if (path.startsWith("@openzeppelin/contracts")) {
+        const fullPath = path.replace("@openzeppelin/contracts", zeppelinPath);
+        return { contents: fs.readFileSync(fullPath, "utf-8") };
+      } else {
+        return { error: "File not found" };
+      }
     }
-  }
 
-  const output = JSON.parse(
-    solc.compile(JSON.stringify(input), { import: findImports })
-  )
+    const output = JSON.parse(
+      solc.compile(JSON.stringify(input), { import: findImports })
+    );
 
-  let abi
-  let bytecode
+    let abi;
+    let bytecode;
 
-  for (const contractName in output.contracts["contracts/ERC20Contract.sol"]) {
-    abi = output.contracts["contracts/ERC20Contract.sol"][contractName].abi
-    bytecode =
-      output.contracts["contracts/ERC20Contract.sol"][contractName].evm.bytecode.object
-  }
+    for (const contractName in output.contracts[filePath]) {
+      abi = output.contracts[filePath][contractName].abi;
+      bytecode = output.contracts[filePath][contractName].evm.bytecode.object;
+    }
 
-  console.log(bytecode)
+    resolve({ abi, bytecode });
+  });
+}
 
-  module.exports = { abi, bytecode }
-}, 5000)
+module.exports = { generateContract };
