@@ -11,7 +11,7 @@ function generateTransferFunction() {
       }`;
 }
 
-async function generateContract(options) {
+async function generateERC20Contract(options) {
   return new Promise((resolve, reject) => {
     const contract = erc20.print(options);
 
@@ -75,4 +75,4 @@ async function generateContract(options) {
   });
 }
 
-module.exports = { generateContract };
+module.exports = { generateERC20Contract };
