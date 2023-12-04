@@ -6,11 +6,8 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 
-contract MyToken is ERC721, ERC721Pausable, Ownable, ERC721Burnable {
-    constructor(address initialOwner)
-        ERC721("MyToken", "NBT")
-        Ownable(initialOwner)
-    {}
+contract NBT is ERC721, ERC721Pausable, Ownable, ERC721Burnable {
+    constructor(address initialOwner) ERC721("NBT", "NB") Ownable(initialOwner) {}
 
     function pause() public onlyOwner {
         _pause();

@@ -1,34 +1,11 @@
 // generateERC20.js
 const fs = require("fs");
 const solc = require("solc");
-const { erc721 } = require("@openzeppelin/wizard")
 
-function generateTransferFunction() {
-  return `
-  function transfer(address to, uint256 amount) public {
-    _transfer(msg.sender, to, amount);
-  }`;
-}
-
-async function generateERC20Contract(options) {
+async function generateGT(options) {
   return new Promise((resolve, reject) => {
-
-    const contract = erc721.print(options)
-
-    const lastCurlyBraceIndex = contract.lastIndexOf("}")
-    const modifiedContract =
-      contract.slice(0, lastCurlyBraceIndex) +
-      generateTransferFunction() +
-      "\n" +
-      contract.slice(lastCurlyBraceIndex)
-
-    const finalContract = modifiedContract.replace(
-      "/// @custom:oz-upgrades-unsafe-allow constructor",
-      ""
-    )
-
+    const finalContract = options.contract
     const filePath = `contracts/${options.name}.sol`
-
     fs.writeFileSync(filePath, finalContract);
 
     const input = {
@@ -75,4 +52,4 @@ async function generateERC20Contract(options) {
   });
 }
 
-module.exports = { generateERC20Contract };
+module.exports = { generateGT };
