@@ -1,29 +1,9 @@
 const fs = require("fs")
 const solc = require("solc")
-const { erc1155 } = require("@openzeppelin/wizard")
-
-function generateTransferFunction() {
-    return `
-    function safeTransferFrom(address from, address to, uint256 id, uint256 value, bytes memory data) public override {
-      safeTransferFrom(from, to, id, value, data);
-    }`
-  }
 
 async function generateERC1155Contract(options) {
   return new Promise((resolve, reject) => {
-    const contract = erc1155.print(options)
-
-    const lastCurlyBraceIndex = contract.lastIndexOf("}")
-    const modifiedContract =
-      contract.slice(0, lastCurlyBraceIndex) +
-      generateTransferFunction() +
-      "\n" +
-      contract.slice(lastCurlyBraceIndex)
-
-    const finalContract = modifiedContract.replace(
-      "/// @custom:oz-upgrades-unsafe-allow constructor",
-      ""
-    )
+    const finalContract = options.contract
 
     const filePath = `contracts/${options.name}.sol`
 
@@ -70,6 +50,8 @@ async function generateERC1155Contract(options) {
       abi = output.contracts[filePath][contractName].abi
       bytecode = output.contracts[filePath][contractName].evm.bytecode.object
     }
+
+    fs.unlinkSync(filePath);
 
     resolve({ abi, bytecode })
   })

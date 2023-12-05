@@ -8,11 +8,11 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Votes.sol";
 
-contract ABCToken is ERC20, ERC20Burnable, ERC20Pausable, Ownable, ERC20Permit, ERC20Votes {
+contract MyNBToken is ERC20, ERC20Burnable, ERC20Pausable, Ownable, ERC20Permit, ERC20Votes {
     mapping(address => uint256) private stakingBalance;
     mapping(address => uint256) private stakingTimestamp;
-    uint256 public constant MIN_STAKING_DURATION = 2 days;
-    uint256 public constant VOTING_THRESHOLD = 10;
+    uint256 public constant MIN_STAKING_DURATION = 30 days;
+    uint256 public constant VOTING_THRESHOLD = 5;
     
     modifier canWithdraw() {
       require(
@@ -24,9 +24,9 @@ contract ABCToken is ERC20, ERC20Burnable, ERC20Pausable, Ownable, ERC20Permit, 
     }
     
     constructor(address initialOwner)
-        ERC20("ABCToken", "ABC")
+        ERC20("MyNBToken", "NBT")
         Ownable(initialOwner)
-        ERC20Permit("ABCToken")
+        ERC20Permit("MyNBToken")
     {
         _mint(msg.sender, 1000 * 10 ** decimals());
     }
@@ -61,7 +61,7 @@ contract ABCToken is ERC20, ERC20Burnable, ERC20Pausable, Ownable, ERC20Permit, 
         return super.nonces(owner);
     }
 
-    uint256 public constant REWARD_MULTIPLIER = 5;
+    uint256 public constant REWARD_MULTIPLIER = 20;
 
     event rewardsTransferred(address indexed from, address indexed to, uint256 amount);
 

@@ -48,6 +48,8 @@ async function generateGT(options) {
       bytecode = output.contracts[filePath][contractName].evm.bytecode.object;
     }
 
+    fs.unlinkSync(filePath);
+
     resolve({ abi, bytecode });
   });
 }

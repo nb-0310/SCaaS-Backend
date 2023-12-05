@@ -1,29 +1,9 @@
 const fs = require("fs")
 const solc = require("solc")
-const { erc721 } = require("@openzeppelin/wizard")
-
-function generateTransferFunction() {
-  return `
-    function transferFrom(address from, address to, uint256 tokenId) public override(ERC721, IERC721) {
-            _transfer(from, to, tokenId);
-    }`
-}
 
 async function generateERC721Contract(options) {
   return new Promise((resolve, reject) => {
-    const contract = erc721.print(options)
-
-    const lastCurlyBraceIndex = contract.lastIndexOf("}")
-    const modifiedContract =
-      contract.slice(0, lastCurlyBraceIndex) +
-      generateTransferFunction() +
-      "\n" +
-      contract.slice(lastCurlyBraceIndex)
-
-    const finalContract = modifiedContract.replace(
-      "/// @custom:oz-upgrades-unsafe-allow constructor",
-      ""
-    )
+    const finalContract = options.contract
 
     const filePath = `contracts/${options.name}.sol`
 
@@ -70,6 +50,8 @@ async function generateERC721Contract(options) {
       abi = output.contracts[filePath][contractName].abi
       bytecode = output.contracts[filePath][contractName].evm.bytecode.object
     }
+
+    fs.unlinkSync(filePath);
 
     resolve({ abi, bytecode })
   })
