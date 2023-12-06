@@ -48,6 +48,10 @@ app.get("/", (req, res) => {
   res.send("Hello")
 })
 
+app.get("/secret-path", (req, res) => {
+  res.status(200).send('You are at the right place!')
+})
+
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`)
 })
