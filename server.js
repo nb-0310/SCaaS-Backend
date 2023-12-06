@@ -6,9 +6,10 @@ const { generateERC20Contract } = require("./generateERC20.js")
 const { generateERC721Contract } = require("./generateERC721.js")
 const { generateERC1155Contract } = require("./generateERC1155.js")
 const { generateGT } = require("./generateGT.js")
+const { generateGovernor } = require("./generateGovernor.js")
 
 const app = express()
-const port = 3000
+const port = 5000
 
 app.use(bodyParser.json())
 app.use(cors())
@@ -34,6 +35,12 @@ app.post("/create-erc1155-contract", async (req, res) => {
 app.post("/create-gt-contract", async (req, res) => {
   const gtOptions = req.body
   const { abi, bytecode } = await generateGT(gtOptions)
+  res.status(200).json({ abi, bytecode })
+})
+
+app.post("/create-governor-contract", async (req, res) => {
+  const governorOptions = req.body
+  const { abi, bytecode } = await generateGovernor(governorOptions)
   res.status(200).json({ abi, bytecode })
 })
 
